@@ -13,5 +13,10 @@ generic-service:
     PERSON_RECORD_API_URL: "https://hmpps-person-record.hmpps.service.justice.gov.uk"
     AUDIT_ENABLED: "false"
 
+  allowlist:
+    groups:
+      - digital_staff_and_mojo
+      - moj_cloud_platform
+
 generic-prometheus-alerts:
   alertSeverity: hmpps-person-record-alerts-prod

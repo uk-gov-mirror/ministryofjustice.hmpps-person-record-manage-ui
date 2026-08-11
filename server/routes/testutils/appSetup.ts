@@ -49,7 +49,7 @@ function appSetup(services: Services, production: boolean, userSupplier: () => H
     }
     next()
   })
-  app.use((req, res, next) => {
+  app.use((req, _res, next) => {
     req.id = randomUUID()
     next()
   })
@@ -58,7 +58,7 @@ function appSetup(services: Services, production: boolean, userSupplier: () => H
   app.use(indexRoutes(services))
   app.use(clusterRoutes(services))
   app.use(searchRoutes(services))
-  app.use((req, res, next) => next(new NotFound()))
+  app.use((_req, _res, next) => next(new NotFound()))
   app.use(errorHandler(production))
 
   return app

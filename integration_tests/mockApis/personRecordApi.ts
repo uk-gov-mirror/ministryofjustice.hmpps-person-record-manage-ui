@@ -19,7 +19,7 @@ const exampleRecords = [
 ]
 
 export default {
-  stubPersonRecordPing: (httpStatus = 200): SuperAgentRequest =>
+  stubPing: (httpStatus = 200): SuperAgentRequest =>
     stubFor({
       request: {
         method: 'GET',
