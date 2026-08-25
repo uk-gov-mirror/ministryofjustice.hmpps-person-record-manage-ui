@@ -1,4 +1,4 @@
-import { RestClient, asSystem, SanitisedError } from '@ministryofjustice/hmpps-rest-client'
+import { RestClient, asSystem } from '@ministryofjustice/hmpps-rest-client'
 import type { AuthenticationClient } from '@ministryofjustice/hmpps-auth-clients'
 import config from '../config'
 import logger from '../../logger'
@@ -17,48 +17,15 @@ export default class PersonRecordApiClient extends RestClient {
   }
 
   async getClusterFromUUID(username: string, uuid: string): Promise<ClusterDetailResponse> {
-    return this.get(
-      {
-        path: `/admin/cluster/${uuid}`,
-        errorHandler: <ERROR>(path: string, verb: string, error: SanitisedError<ERROR>) => {
-          if (error.responseStatus === 404) {
-            return { uuid, status: '', records: [] as Record[], clusterSpec: {} }
-          }
-          throw error
-        },
-      },
-      asSystem(username),
-    )
+    return this.getCluster(`/admin/cluster/${uuid}`, username)
   }
 
   async getClusterFromCRN(username: string, crn: string): Promise<ClusterDetailResponse> {
-    return this.get(
-      {
-        path: `/admin/cluster/probation/${crn}`,
-        errorHandler: <ERROR>(path: string, verb: string, error: SanitisedError<ERROR>) => {
-          if (error.responseStatus === 404) {
-            return { uuid: '', status: '', records: [] as Record[], clusterSpec: {} }
-          }
-          throw error
-        },
-      },
-      asSystem(username),
-    )
+    return this.getCluster(`/admin/cluster/probation/${crn}`, username)
   }
 
   async getClusterFromPrisonNumber(username: string, prisonNumber: string): Promise<ClusterDetailResponse> {
-    return this.get(
-      {
-        path: `/admin/cluster/prison/${prisonNumber}`,
-        errorHandler: <ERROR>(path: string, verb: string, error: SanitisedError<ERROR>) => {
-          if (error.responseStatus === 404) {
-            return { uuid: '', status: '', records: [] as Record[], clusterSpec: {} }
-          }
-          throw error
-        },
-      },
-      asSystem(username),
-    )
+    return this.getCluster(`/admin/cluster/prison/${prisonNumber}`, username)
   }
 
   async getEventLog(username: string, uuid: string): Promise<EventLogResponse> {
@@ -66,14 +33,16 @@ export default class PersonRecordApiClient extends RestClient {
   }
 
   async getCanonicalRecord(username: string, uuid: string): Promise<CanonicalRecordResponse> {
+    return this.get({ path: `/canonical-record/${uuid}` }, asSystem(username))
+  }
+
+  private async getCluster(path: string, username: string): Promise<ClusterDetailResponse> {
     return this.get(
       {
-        path: `/canonical-record/${uuid}`,
-        errorHandler: <ERROR>(path: string, verb: string, error: SanitisedError<ERROR>) => {
-          // if (error.responseStatus === 404) {
-          //   return { canonicalRecord: {}, sentences: [] as Date[] }
-          // }
-          throw error
+        path,
+        errorHandler: (_, __, error) => {
+          if (error.responseStatus !== 404) throw error
+          return { uuid: '', status: '', records: [] as Record[], clusterSpec: {} }
         },
       },
       asSystem(username),
